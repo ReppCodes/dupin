@@ -1,8 +1,13 @@
 [package]
 name = "dupin"
+authors = ["Andrew Repp <rust@andrewrepp.com>"]
+description = "A port scanner in rust. Inspired by nmap and masscan."
 version = "0.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "Unlicense/MIT"
+keywords = ["ports", "nmap", "masscan", "scanner"]
+documentation = "https://github.com/ReppCodes/dupin"
+homepage = "https://github.com/ReppCodes/dupin"
+repository = "https://github.com/ReppCodes/dupin"
 
 [dependencies]
