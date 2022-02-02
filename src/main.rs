@@ -26,15 +26,16 @@ pub struct Args {
     #[clap(short = 'v', long, help = "Display detailed results")]
     verbose: bool,
 
-    #[clap(short = 'p', long, help = "Range of ports to scan, e.g. 0-65535")]
+    #[clap(short = 'p', long, default_value = "00", help = "Range of ports to scan, e.g. 0-65535")]
     // TODO revamp use here to indicate ports instad of hardcoding to all possible
-    port_range: bool,
+    port_range: String,
 
-    #[clap(short = 't', long, help = "Connection timeout in seconds")]
+    #[clap(short = 't', long, default_value = "3", help = "Connection timeout in seconds")]
     timeout: String,
 }
-async fn scan(target: IpAddr, full: bool, concurrency: usize, timeout: u64) {
-    let ports = stream::iter(get_ports(full));
+
+async fn scan(target: IpAddr, port_range: String, concurrency: usize, timeout: u64) {
+    let ports = stream::iter(get_ports(port_range));
 
     ports
         .for_each_concurrent(concurrency, |port| scan_port(target, port, timeout))
@@ -52,10 +53,18 @@ async fn scan_port(target: IpAddr, port: u16, timeout: u64) {
     }
 }
 
-fn get_ports(full: bool) -> Box<dyn Iterator<Item = u16>> {
-    // TODO revamp use here to indicate port range instad of hardcoding to all possible
-    if full {
-        Box::new((1..=u16::MAX).into_iter())
+fn get_ports(port_range: String) -> Box<dyn Iterator<Item = u16>> {
+    if port_range != "00" {
+        if port_range.contains("-"){
+            let split: Vec<&str> = port_range.split("-").collect();
+            Box::new((split[0].parse::<u16>().unwrap()..=split[1].parse::<u16>().unwrap()).into_iter())
+        } else {
+            // let mut port_vec: Vec<u16> = Vec::new();
+            let port =  port_range.parse::<u16>().unwrap();
+            // port_vec.append(port);
+            // TODO try to get an iterator of a single value, so we don't hit the port twice for no reason
+            Box::new((port..=port).into_iter())
+        }
     } else {
         Box::new(ports::MOST_COMMON_PORTS_1002.to_owned().into_iter())
     }
@@ -64,14 +73,20 @@ fn get_ports(full: bool) -> Box<dyn Iterator<Item = u16>> {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    // example CLI invocations
+    // cargo run -- --target=127.0.0.1
+    // cargo run -- --target=nmap.scanme.org
+    // cargo run -- --target=nmap.scanme.org --port_range=0-65535
     let args = Args::parse();
 
     let concurrency = args.concurrency.parse::<usize>().unwrap_or(1002);
-    let full = args.port_range;
+    let port_range = args.port_range;
     let target = args.target;
     let timeout = args.timeout.parse::<u64>().unwrap_or(3);
 
+    println!("Provided target: {}", target);
     let socket_addresses: Vec<SocketAddr> = format!("{}:0", target).to_socket_addrs()?.collect();
+    println!("Scanning target IP address: {}", socket_addresses[0].ip().to_string());
 
     if socket_addresses.is_empty() {
         return Err(Error::new(
@@ -80,7 +95,7 @@ async fn main() -> Result<(), Error> {
         ));
     }
 
-    scan(socket_addresses[0].ip(), full, concurrency, timeout).await;
+    scan(socket_addresses[0].ip(), port_range, concurrency, timeout).await;
 
     Ok(())
 }
