@@ -1,0 +1,9 @@
+# Format is that found in nmap-service-probes file.
+# See https://nmap.org/book/vscan.html for full description of the format supported.
+##############################NEXT PROBE##############################
+Probe TCP DupinExample q|GET / HTTP/1.0\r\n\r\n|
+rarity 99
+ports 80-85,88
+sslports 443,993
+
+match aug-dupin-example m|^setreply=450 4\.5\.0 Sucess:%20Missing%20'response'%/

@@ -8,6 +8,7 @@ use std::{
 use tokio::net::TcpStream;
 
 mod ports;
+mod probes;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -68,7 +69,7 @@ fn get_ports(port_range: String) -> Box<dyn Iterator<Item = u16>> {
             Box::new((port..=port).into_iter())
         }
     } else {
-        Box::new(ports::MOST_COMMON_PORTS_1002.to_owned().into_iter())
+        Box::new(ports::MOST_COMMON_PORTS.to_owned().into_iter())
     }
 }
 
