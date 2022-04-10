@@ -6,7 +6,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/dupin.exe",
-            "args": ["--target", "nmap.scanme.org", "--port-range", "80"],
+            "args": ["--target", "targetscan.org", "--port-range", "80-100"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

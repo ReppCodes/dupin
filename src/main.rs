@@ -27,7 +27,6 @@ pub struct Args {
     verbose: bool,
 
     #[clap(short = 'p', long, default_value = "00", help = "Range of ports to scan, e.g. 0-65535")]
-    // TODO revamp use here to indicate ports instad of hardcoding to all possible
     port_range: String,
 
     #[clap(short = 't', long, default_value = "3", help = "Connection timeout in seconds")]
@@ -48,8 +47,11 @@ async fn scan_port(target: IpAddr, port: u16, timeout: u64) {
 
     //TODO refactor to store port into "open ports" hashmap for cleaner display at the end
     match tokio::time::timeout(timeout, TcpStream::connect(&socket_address)).await {
-        Ok(Ok(_)) => println!("{}", port),
-        _ => {}
+        // add service probe reads/writes handling here
+        // stream.write(&[1])?;
+        // stream.read(&mut [0; 128])?;
+        Ok(Ok(_)) => println!("Found open: {}", port),
+        _ => println!("Found closed: {}", port)
     }
 }
 
@@ -76,7 +78,8 @@ async fn main() -> Result<(), Error> {
     // example CLI invocations
     // cargo run -- --target=127.0.0.1
     // cargo run -- --target=nmap.scanme.org
-    // cargo run -- --target=nmap.scanme.org --port_range=0-65535
+    // cargo run -- --target=nmap.scanme.org --port-range=0-65535
+    // cargo run -- --target=nmap.scanme.org --port-range=80
     let args = Args::parse();
 
     let concurrency = args.concurrency.parse::<usize>().unwrap_or(1002);
